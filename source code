@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
+
+void main() {
+  runApp(BurnTECHApp());
+}
+
+class BurnTECHApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'BurnTECH',
+      theme: ThemeData(
+        primarySwatch: Colors.orange,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: HomeScreen(),
+    );
+  }
+}
+import 'package:flutter/material.dart';
+import 'map_screen.dart';
+import 'schedule_screen.dart';
+import 'connect_screen.dart';
+import 'profile_screen.dart';
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('BurnTECH'),
+        centerTitle: true,
+      ),
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: EdgeInsets.all(16.0),
+        children: [
+          _buildFeatureCard(context, Icons.map, 'Map', MapScreen()),
+          _buildFeatureCard(context, Icons.schedule, 'Schedule', ScheduleScreen()),
+          _buildFeatureCard(context, Icons.people, 'Connect', ConnectScreen()),
+          _buildFeatureCard(context, Icons.person, 'Profile', ProfileScreen()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context, IconData icon, String title, Widget screen) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => screen),
+      ),
+      child: Card(
+        elevation: 4.0,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 40.0, color: Colors.orange),
+              SizedBox(height: 8.0),
+              Text(title, style: TextStyle(fontSize: 16.0)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+import 'package:flutter/material.dart';
+
+class MapScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Map'),
+      ),
+      body: Center(
+        child: Text('Interactive Map Coming Soon!'),
+      ),
+    );
+  }
+}
+class Event {
+  final String id;
+  final String title;
+  final String description;
+  final DateTime startTime;
+  final DateTime endTime;
+
+  Event({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.startTime,
+    required this.endTime,
+  });
+
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      startTime: DateTime.parse(json['startTime']),
+      endTime: DateTime.parse(json['endTime']),
+    );
+  }
+}
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../models/event_model.dart';
+
+class APIService {
+  final String baseUrl = "https://api.burningman.org";
+
+  Future<List<Event>> fetchEvents() async {
+    final response = await http.get(Uri.parse('$baseUrl/events'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((event) => Event.fromJson(event)).toList();
+    } else {
+      throw Exception("Failed to load events");
+    }
+  }
+}
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.15.0
+  flutter_map: ^3.0.0
+  provider: ^6.0.0
